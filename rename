@@ -78,16 +78,17 @@ my %library = (
 GetOptions( demote_abbrev(
 	'h|help'                    => sub { pod2usage() },
 	'man'                       => sub { pod2usage( -verbose => 2 ) },
+
 	'0|null'                    => \my $opt_null,
 	'f|force'                   => \my $opt_force,
 	'g|glob'                    => \my $opt_glob,
 	'i|interactive'             => \my $opt_interactive,
 	'k|backwards|reverse-order' => \my $opt_backwards,
-	'l|symlink'                 => sub { $VERB ? pod2usage( -verbose => 1 ) : ( $VERB = VERB_FOR->{ 'symlink' } ) },
 	'L|hardlink'                => sub { $VERB ? pod2usage( -verbose => 1 ) : ( $VERB = VERB_FOR->{    'link' } ) },
+	'l|symlink'                 => sub { $VERB ? pod2usage( -verbose => 1 ) : ( $VERB = VERB_FOR->{ 'symlink' } ) },
 	'M|use=s'                   => \@USE,
-	'n|just-print|dry-run'      => \my $opt_dryrun,
 	'N|counter-format=s'        => \my $opt_ntmpl,
+	'n|just-print|dry-run'      => \my $opt_dryrun,
 	'p|mkpath|make-dirs'        => \my $opt_mkpath,
 	'stdin!'                    => \my $opt_stdin,
 	't|sort-time'               => \my $opt_time_sort,
@@ -102,12 +103,11 @@ GetOptions( demote_abbrev(
 	'D|delete-all=s'            => sub { push @EXPR, "s/${\quotemeta $_[1]}//g" },
 	'e|expr=s'                  => \@EXPR,
 	'P|pipe=s'                  => sub { require IPC::Open2; push @EXPR, "pipe_through '\Q$_[1]\E'" },
+	's|subst'                   => \&parse_subst,
+	'S|subst-all'               => \&parse_subst,
 	'x|remove-extension'        => sub { push @EXPR, 's/\. [^.]+ \z//x' },
 	'X|keep-extension'          => sub { push @EXPR, 's/\.([^.]+)\z//x and do { push @EXT, $1; $EXT = join ".", reverse @EXT }' },
 	'z|sanitize'                => sub { push @EXPR, @library{ qw( nows noctrl nometa trim ) } },
-
-	's|subst'                   => \&parse_subst,
-	'S|subst-all'               => \&parse_subst,
 
 	map { my $recipe = $_; $recipe => sub { push @EXPR, $library{ $recipe } } } keys %library,
 ) ) or pod2usage();
