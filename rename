@@ -50,6 +50,10 @@ sub pipe_through {
 
 my ( $VERB, @EXPR );
 
+# if the spec for an option starts with a short name, shuffle it away from first place
+# so that the long alias will be passed to a handler
+sub demote_abbrev { ref or s/\A(.)\|([\w-]+)/$2|$1/ for my @copy = @_; @copy }
+
 sub parse_subst {
 	my $modifier = 'subst-all' eq $_[0] ? 'g' : '';
 	pod2usage( -verbose => 1 ) if @ARGV < 2;
@@ -71,7 +75,7 @@ my %library = (
 	trim      => 's/\A[ _]+//, s/[ _]+\z//'
 );
 
-GetOptions(
+GetOptions( demote_abbrev(
 	'h|help'                    => sub { pod2usage() },
 	'man'                       => sub { pod2usage( -verbose => 2 ) },
 	'0|null'                    => \my $opt_null,
@@ -106,7 +110,7 @@ GetOptions(
 	'S|subst-all'               => \&parse_subst,
 
 	map { my $recipe = $_; $recipe => sub { push @EXPR, $library{ $recipe } } } keys %library,
-) or pod2usage();
+) ) or pod2usage();
 
 $VERB ||= VERB_FOR->{ 'rename' };
 
